@@ -1,0 +1,121 @@
+<!doctype html>
+<!-- Walkthrough composition template. build.mjs fills the __PLACEHOLDERS__ and writes build/index.html.
+     Edit the CSS or the timeline code below to restyle every video; edit scenes.yaml for content and timing. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=__WIDTH__, height=__HEIGHT__" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      /*__THEME__*/
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: var(--w); height: var(--h); overflow: hidden; background: var(--bg); }
+      #root { position: relative; width: var(--w); height: var(--h); overflow: hidden; color: var(--text);
+        font-family: var(--font); -webkit-font-smoothing: antialiased; }
+      .scene { position: absolute; inset: 0; overflow: hidden;
+        background:
+          radial-gradient(calc(var(--u) * 1100px) calc(var(--u) * 800px) at 85% 0%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 70%),
+          radial-gradient(calc(var(--u) * 1000px) calc(var(--u) * 700px) at 0% 100%, color-mix(in srgb, var(--accent2) 22%, transparent), transparent 70%),
+          var(--bg); }
+
+      /* Screen scenes */
+      .drift, .cam { position: absolute; inset: 0; }
+      .frame { position: absolute; overflow: hidden; border-radius: calc(var(--u) * 14px); background: #fff;
+        box-shadow: 0 calc(var(--u) * 40px) calc(var(--u) * 110px) rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .1); }
+      .frame img { position: absolute; display: block; }
+      .frame-phone { border-radius: calc(var(--u) * 64px); background: #0a0a0c; box-shadow: 0 calc(var(--u) * 40px) calc(var(--u) * 110px) rgba(0, 0, 0, .55), 0 0 0 calc(var(--u) * 2px) #2a2a30; }
+      .frame-phone img { border-radius: calc(var(--u) * 50px); }
+      .chrome { position: absolute; left: 0; top: 0; right: 0; display: flex; align-items: center; gap: calc(var(--u) * 9px);
+        padding: 0 calc(var(--u) * 18px); background: #e9e9ee; border-bottom: 1px solid rgba(0, 0, 0, .08); }
+      .chrome i { width: calc(var(--u) * 13px); height: calc(var(--u) * 13px); border-radius: 50%; background: #ff5f57; }
+      .chrome i:nth-child(2) { background: #febc2e; }
+      .chrome i:nth-child(3) { background: #28c840; }
+      .chrome .url { margin-left: calc(var(--u) * 22px); flex: 0 1 calc(var(--u) * 620px); height: calc(var(--u) * 28px); border-radius: calc(var(--u) * 8px);
+        background: #fff; color: #555; font-size: calc(var(--u) * 15px); line-height: calc(var(--u) * 28px); padding: 0 calc(var(--u) * 14px);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .hl { position: absolute; border-style: solid; border-color: var(--accent); opacity: 0;
+        box-shadow: 0 0 0 9999px rgba(4, 6, 14, .42), 0 0 calc(var(--u) * 28px) color-mix(in srgb, var(--accent) 70%, transparent); }
+      .cursor { position: absolute; left: 0; top: 0; width: calc(var(--u) * 40px); height: calc(var(--u) * 40px); opacity: 0; z-index: 5;
+        filter: drop-shadow(0 calc(var(--u) * 3px) calc(var(--u) * 5px) rgba(0, 0, 0, .45)); }
+      .cursor path { fill: #111; stroke: #fff; stroke-width: 1.5; stroke-linejoin: round; }
+      .ripple { position: absolute; left: calc(var(--u) * -30px); top: calc(var(--u) * -30px); width: calc(var(--u) * 60px); height: calc(var(--u) * 60px);
+        border-radius: 50%; border: calc(var(--u) * 4px) solid var(--accent); background: color-mix(in srgb, var(--accent) 25%, transparent); opacity: 0; z-index: 4; }
+      .caption { position: absolute; left: calc(var(--u) * 64px); top: calc(var(--u) * 48px); z-index: 6; display: flex; align-items: center;
+        gap: calc(var(--u) * 16px); max-width: calc(var(--w) - var(--u) * 128px); padding: calc(var(--u) * 10px) calc(var(--u) * 28px) calc(var(--u) * 10px) calc(var(--u) * 10px);
+        border-radius: 999px; background: rgba(10, 12, 22, .78); border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(14px);
+        font-size: calc(var(--u) * 34px); font-weight: 650; letter-spacing: -0.015em; white-space: nowrap; opacity: 0; }
+      .caption b { display: grid; place-items: center; width: calc(var(--u) * 48px); height: calc(var(--u) * 48px); border-radius: 50%;
+        background: var(--accent); font-size: calc(var(--u) * 24px); font-weight: 750; }
+
+      /* Title and end cards */
+      .card { display: grid; place-items: center; text-align: center; }
+      .card-inner { display: flex; flex-direction: column; align-items: center; max-width: calc(var(--w) * .8); }
+      .logo { width: calc(var(--u) * 132px); height: calc(var(--u) * 132px); object-fit: contain; margin-bottom: calc(var(--u) * 40px);
+        filter: drop-shadow(0 calc(var(--u) * 18px) calc(var(--u) * 34px) rgba(0, 0, 0, .45)); }
+      .eyebrow { font-size: calc(var(--u) * 26px); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent2); margin-bottom: calc(var(--u) * 20px); }
+      .card h1 { font-size: calc(var(--u) * 112px); line-height: 1.02; font-weight: 800; letter-spacing: -0.04em; }
+      .rule { width: calc(var(--u) * 140px); height: calc(var(--u) * 7px); border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); margin: calc(var(--u) * 38px) 0; }
+      .card p { font-size: calc(var(--u) * 40px); line-height: 1.3; font-weight: 500; color: rgba(255, 255, 255, .78); }
+      .cta { margin-top: calc(var(--u) * 44px); padding: calc(var(--u) * 16px) calc(var(--u) * 34px); border-radius: 999px; font-size: calc(var(--u) * 32px); font-weight: 650;
+        background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .2); }
+
+      #progress { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--u) * 6px); z-index: 99; background: rgba(255, 255, 255, .08); }
+      #progress i { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transform-origin: 0 0; transform: scaleX(0); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__DURATION__" data-width="__WIDTH__" data-height="__HEIGHT__">
+      <!--__CLIPS__-->
+    </div>
+    <script>
+      const D = /*__DATA__*/null;
+      const tl = gsap.timeline({ paused: true });
+
+      for (const s of D.scenes) {
+        const el = '#sc-' + s.id;
+        const at = s.start;
+        if (s.transition !== 'none') {
+          const from = { opacity: 0 };
+          if (s.transition === 'slide') from.x = D.width * 0.06;
+          if (s.transition === 'zoom') from.scale = 1.06;
+          tl.fromTo(el, from, { opacity: 1, x: 0, scale: 1, duration: s.T, ease: 'power2.out' }, at);
+        }
+
+        if (s.kind !== 'scene') {
+          tl.fromTo(el + ' .r', { opacity: 0, y: 34 * D.u }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.12 }, at + 0.25);
+          tl.fromTo(el + ' .rule', { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: 'power2.inOut', immediateRender: false }, at + 0.45);
+          continue;
+        }
+
+        // Ken Burns: ease into the focus region, then a slow push for the rest of the scene.
+        tl.fromTo('#dr-' + s.id, { scale: 1 }, { scale: 1.035, duration: s.dur + s.T, ease: 'none' }, at);
+        if (s.focus) {
+          tl.fromTo('#cam-' + s.id, { x: 0, y: 0, scale: 1 }, { x: s.tx, y: s.ty, scale: s.z, duration: s.zoomDur, ease: 'power2.inOut' }, at + s.zoomAt);
+        }
+        if (s.caption) {
+          tl.fromTo('#cap-' + s.id, { opacity: 0, y: -14 * D.u }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, at + 0.15);
+        }
+        if (s.cursor) {
+          const c = s.cursor;
+          const cur = '#cur-' + s.id, rp = '#rp-' + s.id;
+          const tip = { x: 6.5 * D.u, y: 4 * D.u }; // arrow tip offset inside the 40px svg
+          tl.set(cur, { x: c.from.x - tip.x, y: c.from.y - tip.y, opacity: 0, scale: 1, transformOrigin: '15% 10%' }, at);
+          tl.to(cur, { opacity: 1, duration: 0.25, ease: 'power1.out' }, at + c.appear);
+          tl.to(cur, { x: c.to.x - tip.x, y: c.to.y - tip.y, duration: c.moveDur, ease: 'power2.inOut' }, at + c.move);
+          tl.to(cur, { scale: 0.82, duration: 0.09, yoyo: true, repeat: 1, ease: 'power1.inOut' }, at + c.at);
+          tl.fromTo(rp, { x: c.to.x, y: c.to.y, scale: 0.3, opacity: 0.95 }, { scale: 1.9, opacity: 0, duration: 0.6, ease: 'power2.out', immediateRender: false }, at + c.at);
+        }
+        if (s.hlAt != null) {
+          tl.fromTo('#hl-' + s.id, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'power2.out' }, at + s.hlAt);
+        }
+      }
+      if (document.getElementById('progress-bar')) {
+        tl.fromTo('#progress-bar', { scaleX: 0 }, { scaleX: 1, duration: D.duration, ease: 'none' }, 0);
+      }
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

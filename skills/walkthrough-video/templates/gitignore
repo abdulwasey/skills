@@ -1,0 +1,5 @@
+node_modules/
+audio/
+build/
+out/
+.auth.json

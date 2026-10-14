@@ -1,0 +1,19 @@
+{
+  "name": "walkthrough",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "tts": "node tts.mjs",
+    "build": "node build.mjs",
+    "render": "bash render.sh",
+    "frames": "bash frames.sh"
+  },
+  "devDependencies": {
+    "gsap": "3.15.0",
+    "hyperframes": "0.8.157",
+    "yaml": "2.9.1"
+  },
+  "optionalDependencies": {
+    "playwright": "1.64.1"
+  }
+}

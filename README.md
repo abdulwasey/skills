@@ -1,10 +1,10 @@
 # skills
 
 Opinionated [Agent Skills](https://agentskills.io) for reviewing and shaping
-code, designing backends, web apps and mobile apps, documenting codebases,
-clearing security alerts, releasing to environment branches, and auditing and
-filming UI. They work with Claude Code and any other agent that reads
-`SKILL.md` skills.
+code, designing backends, web apps and mobile apps, designing admin tools, app
+looks and landing pages, documenting codebases, clearing security alerts,
+releasing to environment branches, and auditing and filming UI. They work with
+Claude Code and any other agent that reads `SKILL.md` skills.
 
 ### Code
 
@@ -34,6 +34,16 @@ Docs, dependencies and releases across one or many repos.
 | [`codebase-docs`](skills/codebase-docs/SKILL.md) | Turn one or more codebases into a linked Markdown docs repo for new developers and AI agents: sliced parallel agents, a cross-service connections map, diagrams, `AGENTS.md` and `llms.txt`, plus link, Mermaid and sensitive-data checks. |
 | [`dependency-alerts`](skills/dependency-alerts/SKILL.md) | Clear npm, Yarn and pnpm security alerts: one verified PR per repo moving each vulnerable copy to the smallest compatible safe version, checked against a recorded local baseline, with what's left and why. |
 | [`env-branch-release`](skills/env-branch-release/SKILL.md) | Ship a PR, branch or the default branch to a long-lived environment branch (qa, staging, team1…): confirm the source, carry exactly that change in the repo's own naming and allowed merge method, and verify each service's deploy before releasing the next. |
+
+### UI design
+
+Creating interfaces that look like one family.
+
+| Skill | What it's for |
+|---|---|
+| [`admin-ui-design`](skills/admin-ui-design/SKILL.md) | Staff and admin tools: fixed structure (page types, data states, tables, filters, forms, keyboard) with a swappable look (Quiet, Dense, Bold), design variations, and the `DESIGN.md` rule book. |
+| [`mobile-ui-design`](skills/mobile-ui-design/SKILL.md) | Mobile app screens and visual systems: platform navigation, touch and text scaling, states and an accessibility gate, sourced tokens with Calm, Editorial and Utility directions, variations, and legacy-app keep lists. |
+| [`landing-page-design`](skills/landing-page-design/SKILL.md) | Landing pages that help people decide: story and section recipes, honest proof and pricing, the conversion action, Editorial, Product and Bold directions, variations, and launch checks for SEO, privacy and performance. |
 
 ### UI and video
 

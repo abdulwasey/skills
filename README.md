@@ -2,10 +2,9 @@
 
 Opinionated [Agent Skills](https://agentskills.io) for reviewing and shaping
 code, designing backends, web apps and mobile apps, designing admin tools, app
-looks and landing pages, documenting codebases,
-clearing security alerts, releasing to environment branches, and auditing and
-filming UI. They work with Claude Code and any other agent that reads
-`SKILL.md` skills.
+looks and landing pages, documenting codebases, clearing security alerts,
+releasing to environment branches, and auditing and filming UI. They work with
+Claude Code and any other agent that reads `SKILL.md` skills.
 
 ### Code
 

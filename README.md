@@ -7,6 +7,9 @@ it, and auditing UI. They work with Claude Code and any other agent that reads
 | Skill | What it's for |
 |---|---|
 | [`react-review`](skills/react-review/SKILL.md) | Review and refactor checklist for React, React Native and TypeScript PRs. |
+| [`backend-system-design`](skills/backend-system-design/SKILL.md) | Designing services: one owner per piece of data, identity and short-lived JWTs, a backend per client, per-caller keys and internal routes, generated contracts, archive-not-delete, queues and webhooks, free-tier environments, phased scaling. |
+| [`web-system-design`](skills/web-system-design/SKILL.md) | Designing web frontends: one generated client, server state in a query cache and view state in the URL, cookie sessions and a session gate, multi-tab leader, flow / inline-edit / danger-zone patterns, tokens and a one-switch staging look. |
+| [`app-system-design`](skills/app-system-design/SKILL.md) | Designing mobile apps: owns no data, one backend built for it, secure-stored session and refresh-once tokens, persisted query cache with stale data, SSE and backend-sent push, deep links, demo mode, staging by default. |
 | [`code-design`](skills/code-design/SKILL.md) | The design principles behind that checklist: reuse, deletion, types as the source of truth, verification. |
 | [`codebase-docs`](skills/codebase-docs/SKILL.md) | Turn one or more codebases into a linked Markdown docs repo for new developers and AI agents: sliced parallel agents, a cross-service connections map, diagrams, `AGENTS.md` and `llms.txt`, plus link, Mermaid and sensitive-data checks. |
 | [`design-audit`](skills/design-audit/SKILL.md) | Read-only, flow-by-flow UI audit (readability, font, spacing, contrast, touch targets, network) on web, iOS simulator and Android emulator. |

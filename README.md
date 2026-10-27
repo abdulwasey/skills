@@ -1,7 +1,8 @@
 # skills
 
 Opinionated [Agent Skills](https://agentskills.io) for reviewing and shaping
-code, designing backends, web apps and mobile apps, documenting codebases,
+code, designing backends, web apps and mobile apps, designing admin tools, app
+looks and landing pages, documenting codebases,
 clearing security alerts, releasing to environment branches, and auditing and
 filming UI. They work with Claude Code and any other agent that reads
 `SKILL.md` skills.
@@ -34,6 +35,16 @@ Docs, dependencies and releases across one or many repos.
 | [`codebase-docs`](skills/codebase-docs/SKILL.md) | Turn one or more codebases into a linked Markdown docs repo for new developers and AI agents: sliced parallel agents, a cross-service connections map, diagrams, `AGENTS.md` and `llms.txt`, plus link, Mermaid and sensitive-data checks. |
 | [`dependency-alerts`](skills/dependency-alerts/SKILL.md) | Clear npm, Yarn and pnpm security alerts: one verified PR per repo moving each vulnerable copy to the smallest compatible safe version, checked against a recorded local baseline, with what's left and why. |
 | [`env-branch-release`](skills/env-branch-release/SKILL.md) | Ship a PR, branch or the default branch to a long-lived environment branch (qa, staging, team1…): confirm the source, carry exactly that change in the repo's own naming and allowed merge method, and verify each service's deploy before releasing the next. |
+
+### UI design
+
+Creating interfaces that look like one family.
+
+| Skill | What it's for |
+|---|---|
+| [`admin-ui-design`](skills/admin-ui-design/SKILL.md) | Staff and admin tools: page types, shared components, the four data states, tables, filters, inline editing, status and charts, and the `DESIGN.md` rule book with its review checklist. |
+| [`mobile-ui-design`](skills/mobile-ui-design/SKILL.md) | A mobile app's visual system derived from the brand site and sibling products, with cited sources: palette, type, shape, elevation, core components, and what to keep from a legacy app. |
+| [`landing-page-design`](skills/landing-page-design/SKILL.md) | Marketing and product landing pages that sell: slides-not-a-page bands, a three-layer story, band recipes from hero to final CTA, blended imagery, mobile, motion and performance, and turning client mocks into a spec. |
 
 ### UI and video
 

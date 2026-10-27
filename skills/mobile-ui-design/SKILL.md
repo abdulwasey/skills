@@ -1,166 +1,174 @@
 ---
 name: mobile-ui-design
-description: Use when creating or restyling a mobile app's visual system - deriving it from the brand's website and sibling products, setting palette, type, radius, spacing and elevation, and specifying core components (buttons, cards, lists, inputs, tabs, sheets, empty and loading states) - or when porting a legacy app's look and deciding what to keep. Not for admin web tools (see admin-ui-design), landing pages (see landing-page-design) or auditing a running app (see design-audit).
+description: Use when designing mobile app screens, mockups, a visual system or design variations for an iOS / Android / cross-platform app - palette, type, spacing, elevation, core components, navigation, states and accessibility - including deriving the look from a brand's website or sibling products, or deciding what to keep when replacing a legacy app. Not for admin web tools (admin-ui-design), landing pages (landing-page-design), app architecture (app-system-design) or auditing a running app (design-audit).
 ---
 
 # Mobile UI Design
 
 ## Overview
 
-A mobile app should look like it belongs to the same family as the brand's website and its sibling products, while feeling native. Don't invent a look. **Derive it from the sources**, cite each value's origin, and write the result down as one rule book the app is restyled to.
+A mobile app should feel native on each platform and belong to its brand. Design it in two layers:
+- **Structure:** platform navigation, core components, states, touch, accessibility.
+- **Look:** a token set derived from the brand's sources, or from a direction. Swapping it gives variations.
 
-**Core principle:** flat and quiet, the brand colour only for actions, and colour otherwise only for status. Every value in the rule book comes from a named source, or has a written reason.
+**Core principle:** every visual value comes from a named source or has a written reason, and every screen passes the accessibility gate.
 
-## When to Use
+[examples.md](examples.md) has one class-booking screen in three variations, a sourced palette, a component spec and a keep list for a legacy app.
 
-- Starting a new app's visual design, or restyling an existing one.
-- The app looks unlike the website or the other products.
-- Replacing a legacy app that users already know.
+## Process
 
-## 1. Gather the Sources
+1. **Gather the sources** that exist:
+   - the brand (usually the website's tokens and components);
+   - any sibling product and its rule book;
+   - a legacy app that users know.
 
-| Source | What it gives |
-|---|---|
-| **The brand source** (usually the website's tokens and components) | Palette, type families, button and card recipes |
-| **A sibling product** (an admin tool, another app) and its `DESIGN.md` | Rules: status tones, spacing scale, weights, what's forbidden |
-| **The legacy app** users know | Familiar patterns worth keeping, and mistakes not to repeat |
+   Tag each source (WEB, ADMIN, OLD). Say which wins when they disagree, and why.
+2. **Write the shared ideas first:** three or four lines on what the brand's products have in common, for example "flat surfaces, brand colour for actions, colour for status".
+3. **Set the tokens** (palette, type, shape, spacing, elevation), citing a source or a reason for each. The rule book cites the source per token. File and line references go in an appendix.
+4. **Specify the components and states,** then the screens.
+5. **Make variations** where the direction is still open.
+6. **Hand off,** then audit the built app with `design-audit`.
 
-Give each source a short tag (WEB, ADMIN, OLD) and cite file and line for every value (`WEB globals.css:65`). When sources disagree, pick one, and say which and why.
+## Structure
 
-Write down the **shared ideas** first. Usually:
-- **flat and quiet:** hairline borders, no shadows at rest;
-- **the brand colour is for actions only**;
-- **colour means status.**
+### Platform navigation
 
-## 2. Palette
+- **iOS:** a tab bar for the top-level areas, navigation bars with large titles where they help, swipe-back, and sheets with detents.
+- **Android:** a navigation bar or rail, top app bars, predictive back, and bottom sheets.
+- **Cross-platform apps** keep the platform's navigation and back behaviour, and share content components.
+- **Tablets and landscape:** a navigation rail or sidebar, split views, and content at a readable maximum width.
 
-- **Light tokens:**
-  - background and surface;
-  - canvas (behind grouped lists);
-  - surface-hover (pressed rows, filled search, segmented track);
-  - ink, ink-secondary, and ink-muted (the lightest allowed text, AA on white);
-  - hairline (every edge, 1px), a softer inner hairline, and field-border (inputs and outline buttons only);
-  - primary and pressed;
-  - brand text (the high-contrast shade for brand-coloured text on white);
-  - a subtle primary background (selected tint, info pill, avatar fill).
-- **Dark tokens** are designed, not inverted. Fix each value, and check contrast for text and brand text.
-- **Status tones** come from the brand's hues, in the sibling product's soft-pill structure. Each tone has a fill, a text and a dot, in light and dark:
-  - success, warning, danger, info or brand;
-  - ongoing, neutral.
+### Touch and sizing
 
-  Replace any status colours that belong to no brand palette.
-- **Reserved colours:** write down any colour the brand restricts (a gold used only in the logo and ratings; a colour that belongs to one programme or product line). Never use them for buttons, badges or text.
+- **Targets:** at least 44 × 44 pt on iOS and 48 × 48 dp on Android. A smaller visible control gets padding up to that size.
+- **Units:** pt on iOS, dp and sp on Android.
+- **Text scales** with the system setting (Dynamic Type, font scale). Layouts reflow at the largest sizes: rows grow, labels wrap, and horizontal groups stack.
+- **Safe areas** are respected, and nothing important sits under the home indicator or the notch.
 
-## 3. Type
-
-- **Families:** follow the brand. A display serif for page titles, section headings, card titles and prices, plus a neo-grotesk sans for UI and body is a strong default. If the brand's sans isn't available on mobile, use the closest familiar one.
-- **Scale:** one table, in px with line heights.
-
-  | Role | Spec |
-  |---|---|
-  | display | 30 / 34, serif 400 |
-  | title | 28 / 32, serif |
-  | detail title | 26, serif 500 |
-  | section | 22, serif |
-  | card title | 18 / 23, serif 500 |
-  | row title | 16 / 22, sans 600 |
-  | body | 15 / 22 |
-  | small | 13 / 18 |
-  | caption | 12 / 16 |
-  | label | 13 / 600, sentence case, no uppercase |
-  | badge | 11 / 600 |
-  | buttons | 16, 15 or 13, all 600 |
-
-- **Weights per view:** at most one serif weight plus two sans weights (400 and 600). Drop the rest. Bold only in numeric badges.
-- **Numbers:** times, prices and counts use `tabular-nums`.
-- **Other scripts:** runs in another script (Arabic, Hebrew, CJK) get their own face, size (around 1.3×) and line height (around 1.9× for Arabic), with RTL direction and alignment, in their own text block. Check that the display face renders the special characters you need, and set a fallback if it doesn't.
-
-## 4. Shape, Spacing, Elevation
-
-| Element | Radius |
-|---|---|
-| Content card | 16 |
-| Panel, grouped list, info box, standalone image | 12 |
-| Buttons, chips, badges, status pills, search | Full pill |
-| Inputs | 12 |
-| Sheets (top corners) | 20 |
-| Avatars | Circle |
-| Icon tiles | About 31% of size (squircle) |
-| Chat bubbles | 18, with a small tail corner on the first of a run |
-
-**Spacing:** one scale (4, 6, 8, 12, 16, 20, 24, 32, 48, 56):
-- page gutter 16;
-- card padding 16;
-- 6 inside a text group and 12 between groups;
-- 12 between stacked cards and 32 between sections;
-- 12 from a heading to its content, and 6 from an icon to its label.
-
-**Elevation:**
-- **Cards are flat:** a 1px hairline and no shadow at rest. The pressed state is an opacity change or surface-hover.
-- **Borders:** one 1px primary border marks a single selected or live state. Never a coloured or 2px border otherwise.
-- **Shadows** only on floating layers: a FAB, menus and popovers, a segmented thumb, the chat composer.
-- **Glass and blur** only for platform chrome: the tab bar, headers, sheets, and floating buttons over a hero image.
-
-## 5. Components
+### Core components
 
 | Component | Rule |
 |---|---|
-| **Primary button** | Pill, brand fill, 600. Three sizes: `lg` 48 for the one sticky CTA per screen, `md` 40 as the default, `sm` 32 in rows. 16 icons with a 6 gap |
-| **Secondary** | Pill, 1px field-border outline, ink text. A brand outline only beside a primary |
-| **Ghost** | Brand text 600, no fill, a 44 hit area |
-| **Danger** | Outline with danger text. Confirm buttons stay primary |
-| **Card** | Surface, hairline, radius 16, padding 16, no shadow |
-| **Media card** | 16:9 image; a status dot pill on the image; an eyebrow; a serif title (2 lines); one meta line; a hairline footer with timing on the left and price on the right. No tag chips, no summary line |
-| **Chips** | Only for filters. Never for tags, metadata or page sections |
-| **Role marks** | Caption text after the name, with a small check icon in brand text. No colour per role |
-| **Status pill** | On images, a white dot pill. In lists, the soft pill, 20 tall. Use the brand's status words |
-| **List row** | Min 64 tall, avatar 44, gap 12; row title, a secondary line, a trailing caption. A hairline inset to the text start. Rows sit in one full-bleed surface block, not a card per row |
-| **Section header** | Serif section title, with "See all" on the right |
-| **Header** | Avatar 36 plus a serif title. Borderless icon buttons (44 hit, 22 icon). No hairline at rest: a top fade, or a hairline once scrolled |
-| **Input** | 48 tall, radius 12, field-border, 16px text (no iOS zoom), label above, 2px primary focus, error text below |
-| **Search** | Pill, 44, filled surface-hover, no border |
-| **Tabs** | Underline tabs for page-level views (active ink 600 with a 2px bar) |
-| **Segmented control** | 2–3 equal views inside a screen |
-| **Empty state** | A 36 icon, a 17/600 title, one line (max ~280 wide), and one `md` primary if the viewer can fix it |
-| **Skeleton** | Shaped like the final layout; bars radius 6, media radius 12, in surface-hover |
-| **Avatar** | Circle at 24, 32, 44 or 56; initials 600 at 0.38× on the subtle primary background |
-| **Price** | Detail: serif 32/600 tabular, a muted strikethrough, an instalment line. Card: sans 15/600. "Free" in success text |
-| **Images** | One fixed ratio per media type (16:9 for courses or products). Post photos: one at 4:3, two or more as a square grid |
-| **Sheet** | Native or glass, top radius 20, a 4×36 grabber, a 17/600 title, actions on the right above a hairline |
+| Primary button | One per screen region. A full-width sticky bottom button for the screen's main action, or a standard button in content |
+| Secondary / text button | Lower emphasis. Text buttons keep a full-size hit area |
+| Destructive action | The platform's destructive style (iOS destructive role, Android error colour) and a confirmation that names the consequence |
+| Card | A surface with a defined edge (border or elevation) |
+| List row | A leading avatar or image, title, secondary line, trailing meta. Rows sit in a grouped or full-bleed list |
+| Section header | A title, with an optional "See all" |
+| Text field | A visible label, hint, error text below, the right keyboard type and autofill |
+| Search | A platform search field |
+| Tabs / segmented control | Tabs switch page-level views; a segmented control switches 2–4 equal views inside a screen |
+| Chips | Filters and choices |
+| Status | A word with a tone; tones are reserved for status |
+| Sheet | A platform sheet with a grabber where the platform uses one, a title, and actions |
+| Avatar | A circle, with an image or initials |
+| Media card | The image at one fixed ratio per content type, title, one meta line |
 
-## 6. Porting a Legacy App
+Product components (prices, schedules, chat bubbles) get their own specs in the rule book.
 
-List what users love in the old app, ranked by how recognisable it is. For each item, say what it is, the files it lives in, and where it goes in the new app. Typical keepers:
-- a signature visual element (icon tiles);
-- a navigation habit (a rail of joined spaces);
-- polished motion (a sliding tab bar, a heart burst on double-tap);
-- feel (a haptic tick on tap, pressed opacity around 0.72);
-- well-tuned chat bubbles and composer.
+### States
 
-Also write a **Do not bring over** list: custom chrome the platform now does better (a hand-rolled tab bar), gradient washes, the old palette, heavy title weights.
+Every screen designs:
+- first load (skeletons) and refresh (pull-to-refresh, with content kept);
+- an error with Retry;
+- offline, with cached content marked by age;
+- empty, with the action that fixes it;
+- saving, failed save (input kept), and pending sync;
+- a permission request, and a permission-denied state with a route to Settings.
 
-## Write It Down
+### Accessibility gate
 
-A `Design Rules.md` with:
-- source tags;
-- the three shared ideas;
-- palette (light, dark, status, reserved);
-- type (families, scale, weights, numbers, other scripts);
-- shape, spacing and elevation;
-- the components table, with a column per source and the final app rule;
-- the ranked keep list and the "do not bring" list.
+Every screen passes before it's done:
+- **Contrast:**
+  - text 4.5:1 (3:1 for large text);
+  - control boundaries, focus indicators and meaningful icons 3:1 against the surface they sit on.
+- **Screen readers:** VoiceOver and TalkBack read every element with a name, role and state, in a sensible order. Grouped rows read as one item.
+- **Large text:** the screen works at the largest text size.
+- **Reduce Motion** replaces movement with fades. Haptics follow the system setting and always pair with a visible change.
+- **Status and errors** use words as well as colour.
 
-Restyle screens to it, one module at a time.
+## Look
 
-## Red Flags
+Set these tokens from the sources, or start from a direction:
+- **Palette:**
+  - light: background, surface, canvas, surface-pressed, ink, ink-secondary, ink-muted, border, primary, primary-pressed, brand-text, primary-subtle;
+  - dark: its own set, designed and contrast-checked;
+  - status tones (success, warning, danger, info, neutral): each a fill, a text and a dot, in light and dark, chosen for clear meaning first and brand harmony second;
+  - reserved colours: any colour the brand limits to one use (a logo gold, a colour owned by one product line).
+- **Type:**
+  - one or two families, in a scale of named roles (display, title, section, card title, row title, body, small, caption, label);
+  - each role mapped to the platform's text styles so it scales;
+  - tabular figures for times, prices and counts.
+- **Shape:** radius per element type (card, panel, button, input, sheet, avatar).
+- **Spacing:** one scale, the page gutter, card padding, and the gaps between groups and sections.
+- **Elevation:** which layers float (menus, sheets, a FAB, a composer) and what separates resting surfaces (borders, tone or elevation).
 
-- A value with no source and no reason.
-- Shadows on resting cards, or glass on content.
-- Brand colour on non-actions.
-- A colour per category or role.
-- A reserved colour used for UI.
-- More than one serif weight, or bold body text.
-- Chips used as tags.
-- A card per list row.
-- Inputs under 16px on iOS.
-- Dark mode made by inverting.
+**Directions** to start from:
+
+| | Calm | Editorial | Utility |
+|---|---|---|---|
+| Suits | Everyday apps, long reading | Content and brand-led apps | Fast, task-driven apps |
+| Surfaces | Flat, hairline borders | Flat, generous imagery | Tonal surfaces, little decoration |
+| Type | One sans | A display serif for titles, sans for UI | One sans, compact scale |
+| Radius | 12–16 | 8–12 | 8 |
+| Buttons | Pills | Pills or soft rectangles | Platform-standard |
+| Colour | Brand on actions | Brand on actions and accents | Brand on actions and selection |
+
+### Other scripts
+
+- **Arabic and Hebrew** run right to left: mirror the layout, set text direction and alignment, use a face with good support, and allow extra line height (about 1.6–1.9× for Arabic).
+- **CJK** stays left to right: use a face with full glyph coverage, allow around 1.5–1.7× line height, and turn off letter-spacing.
+- **Check every display face** for the special characters the content uses, and set fallbacks.
+
+## Variations
+
+Keep the structure fixed and vary the look along named axes:
+
+| Axis | Range |
+|---|---|
+| Direction | Calm · Editorial · Utility · the brand's own |
+| Type | One sans · serif titles + sans · compact sans |
+| Surfaces | Hairlines · tonal · elevation |
+| Colour role | Actions only · accents · selection |
+| Composition | Cards · grouped lists · full-bleed media |
+| Density | Spacious · standard · compact |
+
+- **Distinct:** each variation differs on at least two axes.
+- **Named for its idea.**
+- **Checked:** each one passes the accessibility gate.
+- **Compared fairly:** shown side by side on the same device size and data, in light and dark, with one line each on when to pick it.
+
+## Replacing a Legacy App
+
+- **List what to keep, ranked by user value:** habits people rely on, recognisable signature elements, motion that helps orientation, and good feel (haptics, pressed states). For each item, note what it is, where it lives, where it goes in the new app, and how it adapts to the accessibility gate.
+- **List what to leave behind:** custom chrome the platform now provides, decoration that fights the new look, and patterns that fail accessibility.
+
+## Rule Book
+
+A `DESIGN.md`, matching the format of the brand's other products, holds:
+- the sources and the shared ideas;
+- the tokens with their sources;
+- platform navigation;
+- a spec per component: variants, sizes, states, platform differences, screen-reader behaviour, do and don't;
+- the states and the accessibility gate;
+- the legacy keep and leave lists.
+
+## Handoff
+
+For each screen:
+- behaviour at the smallest phone, the largest phone, tablet and landscape, and at the largest text size;
+- light and dark;
+- every state;
+- edge cases: long names, long translations, missing images, slow networks;
+- motion: trigger, duration, easing, and the Reduce Motion version;
+- screen-reader order.
+
+## Review Checklist
+
+- [ ] Every token has a source or a reason.
+- [ ] Platform navigation and back behaviour on each platform.
+- [ ] Targets 44pt / 48dp; platform units; text scales and reflows.
+- [ ] All states, including offline, failed save and permission denied.
+- [ ] Contrast for text and controls; screen-reader order; Reduce Motion.
+- [ ] Status tones reserved for status, always with words.
+- [ ] Light and dark designed.

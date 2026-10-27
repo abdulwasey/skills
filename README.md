@@ -10,6 +10,7 @@ it, and auditing UI. They work with Claude Code and any other agent that reads
 | [`code-design`](skills/code-design/SKILL.md) | The design principles behind that checklist: reuse, deletion, types as the source of truth, verification. |
 | [`codebase-docs`](skills/codebase-docs/SKILL.md) | Turn one or more codebases into a linked Markdown docs repo for new developers and AI agents: sliced parallel agents, a cross-service connections map, diagrams, `AGENTS.md` and `llms.txt`, plus link, Mermaid and sensitive-data checks. |
 | [`design-audit`](skills/design-audit/SKILL.md) | Read-only, flow-by-flow UI audit (readability, font, spacing, contrast, touch targets, network) on web, iOS simulator and Android emulator. |
+| [`dependency-alerts`](skills/dependency-alerts/SKILL.md) | Clear Dependabot / audit security alerts: one verified PR per repo moving every vulnerable package to its lowest patched version, checked against the default branch's CI baseline, with what's left and why. |
 | [`walkthrough-video`](skills/walkthrough-video/SKILL.md) | Narrated 30–60 s product walkthrough (MP4 + SRT) from screenshots: local TTS, zooms, highlights, cursor, HyperFrames render, frame and sync checks ([demo](skills/walkthrough-video/demo.gif)). |
 | [`marketing-video`](skills/marketing-video/SKILL.md) | Seamless 10–20 s promo loops (MP4, GIF, poster; landscape, square, vertical) rendering the app's real React components with stubbed APIs, plus a launch cut. |
 

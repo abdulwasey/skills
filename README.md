@@ -1,22 +1,49 @@
 # skills
 
-Opinionated [Agent Skills](https://agentskills.io) for reviewing code, shaping
-it, and auditing UI. They work with Claude Code and any other agent that reads
+Opinionated [Agent Skills](https://agentskills.io) for reviewing and shaping
+code, designing backends, web apps and mobile apps, documenting codebases,
+clearing security alerts, releasing to environment branches, and auditing and
+filming UI. They work with Claude Code and any other agent that reads
 `SKILL.md` skills.
+
+### Code
+
+Reviewing and shaping code.
 
 | Skill | What it's for |
 |---|---|
 | [`react-review`](skills/react-review/SKILL.md) | Review and refactor checklist for React, React Native and TypeScript PRs. |
-| [`backend-system-design`](skills/backend-system-design/SKILL.md) | Designing backend architecture: requirements first, one writer per field, few services, identity and token validation, scoped service credentials, versioned contracts and idempotency, data lifecycle and backups, durable at-least-once jobs and webhooks, cost-aware environments. |
-| [`web-system-design`](skills/web-system-design/SKILL.md) | Designing web apps: rendering per route, a generated client, account-scoped query cache and URL state, cookie sessions with CSRF, a five-state session gate, capabilities, interaction patterns, accessibility, one-switch staging look, privacy-first telemetry. |
-| [`app-system-design`](skills/app-system-design/SKILL.md) | Designing mobile apps: PKCE sign-in and one shared refresh, an approved offline allowlist wiped on logout, outbox writes, recoverable live updates and account-bound push, one link parser, a supported-version window, explicit environments per build. |
 | [`code-design`](skills/code-design/SKILL.md) | The design principles behind that checklist: reuse, deletion, types as the source of truth, verification. |
+
+### System design
+
+Designing new systems, one skill per layer. Each ends with the design doc to write and a list of red flags.
+
+| Skill | What it's for |
+|---|---|
+| [`backend-system-design`](skills/backend-system-design/SKILL.md) | Services: data ownership, service boundaries, identity and tokens, service-to-service trust, contracts, data lifecycle and backups, jobs and webhooks, environments and cost. |
+| [`web-system-design`](skills/web-system-design/SKILL.md) | Web apps: rendering, backend integration, sessions and CSRF, state and cache isolation, access, interaction patterns, accessibility, environments and telemetry. |
+| [`app-system-design`](skills/app-system-design/SKILL.md) | Mobile apps: native sign-in and refresh, offline data and writes, live updates and push, deep links, installed-version compatibility and environments per build. |
+
+### Shipping and upkeep
+
+Docs, dependencies and releases across one or many repos.
+
+| Skill | What it's for |
+|---|---|
 | [`codebase-docs`](skills/codebase-docs/SKILL.md) | Turn one or more codebases into a linked Markdown docs repo for new developers and AI agents: sliced parallel agents, a cross-service connections map, diagrams, `AGENTS.md` and `llms.txt`, plus link, Mermaid and sensitive-data checks. |
-| [`design-audit`](skills/design-audit/SKILL.md) | Read-only, flow-by-flow UI audit (readability, font, spacing, contrast, touch targets, network) on web, iOS simulator and Android emulator. |
 | [`dependency-alerts`](skills/dependency-alerts/SKILL.md) | Clear npm, Yarn and pnpm security alerts: one verified PR per repo moving each vulnerable copy to the smallest compatible safe version, checked against a recorded local baseline, with what's left and why. |
+| [`env-branch-release`](skills/env-branch-release/SKILL.md) | Ship a PR, branch or the default branch to a long-lived environment branch (qa, staging, team1…): confirm the source, carry exactly that change in the repo's own naming and allowed merge method, and verify each service's deploy before releasing the next. |
+
+### UI and video
+
+Auditing interfaces and showing them off.
+
+| Skill | What it's for |
+|---|---|
+| [`design-audit`](skills/design-audit/SKILL.md) | Read-only, flow-by-flow UI audit (readability, font, spacing, contrast, touch targets, network) on web, iOS simulator and Android emulator. |
 | [`walkthrough-video`](skills/walkthrough-video/SKILL.md) | Narrated 30–60 s product walkthrough (MP4 + SRT) from screenshots: local TTS, zooms, highlights, cursor, HyperFrames render, frame and sync checks ([demo](skills/walkthrough-video/demo.gif)). |
 | [`marketing-video`](skills/marketing-video/SKILL.md) | Seamless 10–20 s promo loops (MP4, GIF, poster; landscape, square, vertical) rendering the app's real React components with stubbed APIs, plus a launch cut. |
-| [`env-branch-release`](skills/env-branch-release/SKILL.md) | Ship a PR, branch or the default branch to a long-lived environment branch (qa, staging, team1…): confirm the source, carry exactly that change in the repo's own naming and allowed merge method, and verify each service's deploy before releasing the next. |
 
 ## Install
 
@@ -37,7 +64,9 @@ cp -R skills/skills/react-review ~/.claude/skills/
 
 These are my house rules, and they're opinionated on purpose: zero comments
 in a diff, inline anything used fewer than three times, derive types from the
-generated API client. Fork them and change what doesn't fit your codebase.
+generated API client. The system design skills are defaults, not laws: each
+one says when it applies, and stack names in them are examples. Fork them and
+change what doesn't fit your codebase.
 
 ## License
 

@@ -41,9 +41,9 @@ Creating interfaces that look like one family.
 
 | Skill | What it's for |
 |---|---|
-| [`admin-ui-design`](skills/admin-ui-design/SKILL.md) | Staff and admin tools: page types, shared components, the four data states, tables, filters, inline editing, status and charts, and the `DESIGN.md` rule book with its review checklist. |
-| [`mobile-ui-design`](skills/mobile-ui-design/SKILL.md) | A mobile app's visual system derived from the brand site and sibling products, with cited sources: palette, type, shape, elevation, core components, and what to keep from a legacy app. |
-| [`landing-page-design`](skills/landing-page-design/SKILL.md) | Marketing and product landing pages that sell: slides-not-a-page bands, a three-layer story, band recipes from hero to final CTA, blended imagery, mobile, motion and performance, and turning client mocks into a spec. |
+| [`admin-ui-design`](skills/admin-ui-design/SKILL.md) | Staff and admin tools: fixed structure (page types, data states, tables, filters, forms, keyboard) with a swappable look (Quiet, Dense, Bold), design variations, and the `DESIGN.md` rule book. |
+| [`mobile-ui-design`](skills/mobile-ui-design/SKILL.md) | Mobile app screens and visual systems: platform navigation, touch and text scaling, states and an accessibility gate, sourced tokens with Calm, Editorial and Utility directions, variations, and legacy-app keep lists. |
+| [`landing-page-design`](skills/landing-page-design/SKILL.md) | Landing pages that help people decide: story and section recipes, honest proof and pricing, the conversion action, Editorial, Product and Bold directions, variations, and launch checks for SEO, privacy and performance. |
 
 ### UI and video
 

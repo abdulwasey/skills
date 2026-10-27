@@ -1,132 +1,192 @@
 ---
 name: app-system-design
-description: Use when designing a new mobile app (React Native / Expo or similar) or a major part of one - which backends it talks to, how sign-in and token refresh work, where server data and offline cache live, live updates and push, third-party SDKs, deep links, a demo mode, environments and native builds. Also use when reviewing a mobile app design doc, or when an app feature needs data from several services.
+description: Use when designing or reviewing a mobile app architecture or a substantial app area - backend integration, native sign-in and token refresh, local and offline data, live updates and push, deep links, installed-client compatibility, environments and native release strategy. Applies to native and cross-platform apps; stack names are examples. Not for React Native implementation diffs (see react-review) or service internals (see backend-system-design).
 ---
 
 # App System Design
 
 ## Overview
 
-The app owns no data. It signs in with an account service, talks to **one backend built for it**, reads public content from where it lives, and uses third-party SDKs only with short-lived tickets that backend issues. Everything it shows is cached on the device so it opens fast and still works on a bad connection.
+Opinionated defaults for mobile apps:
+- The server holds the secrets and the rules.
+- The phone holds a session, an approved offline cache, pending user work and the UI.
+- The app talks to an account service, a backend suited to it, and public content where it lives.
+- It uses third-party SDKs only with credentials scoped to the user.
+- It plans for installed versions that won't update for months.
 
-**Core principle:** one backend per app, and every secret and rule lives on the server. The phone holds a session, a cache and the UI.
+**Core principle:** every piece of data has a named owner (the server, or the device for drafts and local settings). No server secret or authorisation decision lives in the app.
 
-For the services behind it, see `backend-system-design` in this repo. For a web client, see `web-system-design`.
+`backend-system-design` owns service boundaries and server trust. This skill owns device behaviour and installed-client constraints. Library names (Expo, expo-router, TanStack Query, MMKV, zustand, NativeWind) are one React Native stack; keep the boundaries in any other.
 
 ## When to Use
 
 - Starting a new mobile app, or rebuilding an old one.
 - An app feature needs data from several services.
-- Choosing an auth, data, offline or notification approach.
+- Choosing an auth, data, offline, notification or release approach.
 - Reviewing a mobile design doc.
-
-Not for: line-level React Native review (see `react-review`) or visual audits (see `design-audit`).
 
 ## The Decisions
 
 | # | Decision | Default |
 |---|---|---|
-| 1 | Who the app talks to | Account service, its own backend, public content API; SDKs only with backend-issued tickets |
-| 2 | Sign-in | Session bearer in secure storage → short access JWT; refresh once, then sign out |
-| 3 | Account gates | Explicit server errors that the app routes to a gate screen |
-| 4 | Data layer | Generated client; per-domain api / mappers / hooks; query cache persisted on device |
-| 5 | Live updates | SSE from the app backend; push sent by the backend |
-| 6 | Navigation | File routes, thin screens, one URL scheme for deep links and push |
-| 7 | Demo mode | Fixtures for every API call, behind one switch |
-| 8 | Environments | No env set means staging; production only by explicit config |
-| 9 | Native builds | Dev builds, generated native folders, config plugins and patches |
-| 10 | Look | The brand's tokens, native components, dark mode from the brand |
+| 1 | Who the app talks to | Existing domain APIs, or a BFF when justified; SDKs only with user-scoped credentials |
+| 2 | Sign-in | The system browser with PKCE for OAuth; session in secure storage, access token in memory |
+| 3 | Refresh | One shared refresh; retry only safe requests; sign out only on a definitive rejection |
+| 4 | Account gates | Explicit server errors that the app routes to a gate screen |
+| 5 | Local data | An approved offline allowlist, scoped by account, wiped on logout |
+| 6 | Offline writes | Read-only offline, or an outbox with idempotency; chosen per feature |
+| 7 | Live updates and push | Foreground live channel with recovery; push bound to the account; best effort |
+| 8 | Links | One typed destination parser for deep links and push; verified HTTPS links |
+| 9 | Compatibility | A supported-version window, additive APIs, OTA updates tied to the runtime |
+| 10 | Environments | Explicit per build; dev scripts choose staging; release builds fail without config |
+| 11 | Native workflow | Follow the project's; for Expo CNG, generated folders and config plugins |
 
 ## 1. Who the app talks to
 
 | Talks to | For | Auth |
 |---|---|---|
-| Account service | Sign-in, password reset, access tokens, acting as another user | Session bearer |
-| **The app's backend** | Everything else: profile, the app's features, data from other owners passed through | `Bearer <access JWT>` |
+| Account service | Sign-in, recovery, tokens, delegated support sessions | Its session |
+| **The app's API** (shared domain APIs, or a BFF when aggregation, session handling or release timing justify one) | The app's features, with data from other owners passed through | `Bearer <access token>` |
 | Public content API (CMS) | Catalogue and marketing content | None (anonymous GETs) |
-| Third-party SDKs (chat, video, uploads) | Real-time or heavy features | A short-lived ticket from the app's backend: chat session token, video SDK signature, signed upload URL |
+| Third-party SDKs (chat, video, uploads) | Real-time or heavy features | Short-lived, user-scoped tickets from the backend (chat session token, video SDK signature, signed upload URL), or the SDK's own client auth when it's built for untrusted clients |
 
-- The app **never** calls a system of record directly. Its backend does, with a service key.
-- Content another system already renders well (course material, documents) opens in a web view instead of being rebuilt.
-- No secret ships in the app bundle. Anything `EXPO_PUBLIC_*` is public.
+- **No privileged server credential ships in the app.** Anything public in the bundle (`EXPO_PUBLIC_*`, API base URLs, publishable keys) is public, so treat it that way.
+- The app doesn't call a system of record that only trusts servers. The backend does that, with its own credentials.
+- **Reuse hosted content** (course material, documents) when that beats rebuilding it, through an in-app browser or a web view:
+  - allowlist HTTPS origins, restrict the native bridge and file access, and open outside links externally;
+  - never put a long-lived token in a URL;
+  - never sign in inside a web view.
 
-## 2. Sign-in and tokens
+## 2. Sign-in
 
-1. Sign-in returns a **session bearer** (about 30 days), stored in **secure storage**, never in the plain key-value store.
-2. The app swaps it for an **access JWT** (about 15 minutes) and refreshes it shortly before it expires.
-3. On a `401`, refresh **once** and replay the request. A second `401` signs out.
-4. **Acting as another user** keeps the staff member's own bearer next to the borrowed one, and switches back on stop or when the borrowed session expires.
-5. Sign-in sends the app's origin (`expo-origin: <scheme>://`), and the account service trusts only listed origins.
+- **Use a supported auth SDK.** For OAuth/OIDC, use Authorization Code with PKCE in the system browser, exact registered redirects, and state and nonce checks.
+- A native app is a public client. It can't prove its identity with an embedded secret or a header. Origin headers some libraries need (for example `expo-origin`) are plumbing, not security.
+- Store the **refresh or session credential in OS secure storage** (Keychain, Keystore). Keep the **access token in memory** where practical. Know what survives a reinstall (iOS Keychain can), and clear it on first launch if it shouldn't.
+- **Support impersonation**, only if the backend offers it:
+  - the server issues a scoped, short-lived **delegated** session (actor and subject), never the user's own credentials;
+  - the app shows a persistent "acting as" banner, keeps the operator's own session aside, and isolates caches, queued work and notifications for the delegated session;
+  - it returns cleanly when the delegated session ends.
 
-## 3. Account gates
+## 3. Refresh and retries
 
-The backend says *why* an account can't use something yet: `403 ACCOUNT_NOT_READY` (email not verified, required profile field missing), or `403` for no app role. The app holds those tabs behind a gate screen that explains the next step. It never shows empty lists that look like missing data. Visibility rules (separate spaces, sensitive topics) are enforced by the backend from the authoritative record; the app only reflects them.
+- **One shared in-flight refresh.** Concurrent 401s wait on it instead of racing a rotating refresh token. Store the new credentials atomically.
+- Refresh tokens for public clients rotate with reuse detection, or are sender-constrained. That's the backend's job; the app follows it.
+- After a successful refresh, retry a request **once**, and only if it's safe: a read, or a write carrying its idempotency key.
+- **Sign out only when the refresh credential is definitively rejected or revoked.** Network, timeout and server errors keep the session and the user's work.
 
-## 4. Data layer
+## 4. Account gates
 
-- **A generated client** from the app backend's OpenAPI spec (`api:gen`), never edited.
-- **Per domain:** `<domain>-api.ts` makes the calls, `mappers.ts` turns wire shapes into app shapes, `use-<thing>.ts` holds the query hooks. Screens use hooks, never the client.
-- **The query cache is persisted** to fast on-device storage (MMKV) for about a day, so the app opens on last-known data. Pick a default stale time deliberately (for example 30 minutes), and set shorter ones on hooks that need fresher data.
-- The backend sends `fetchedAt` and `stale` on data it passes through. The app shows "updated 2 h ago" instead of an error when the owner is down.
-- Client-only state (session, appearance, banners, drafts) goes in small stores (zustand), persisted only where it must survive a restart.
+The backend says *why* an account can't use something yet: `403 ACCOUNT_NOT_READY` with a reason (email not verified, a required profile field missing), or `403` for no app role. The app holds those areas behind a gate screen that explains the next step. It never shows empty lists that look like missing data. Visibility rules (separate spaces, sensitive topics) come from the backend; the app only reflects them.
 
-## 5. Live updates and push
+## 5. Local data
 
-- **Live updates over SSE** from the app backend (one stream per signed-in user, typed frames like `ticket.replied`). Clients refetch on the frame. No polling loops on screens.
-- **The backend sends push.** The app only registers device tokens and routes taps. Every push carries `data.open = <in-app route>`.
-- Ask for notification permission at a moment of value ("remind me before class"), and offer the same switch in settings. If permission is asked from only one screen, people who never visit it never get push.
-- Push needs the build's project id and credentials on day one. Without them, tokens silently never register.
-- Local reminders (a class starting) are scheduled on the device from cached data.
+- **Use a generated client** from the backend's pinned OpenAPI contract (`api:gen`), never edited. Screens use data hooks, never the client.
+- **Per domain,** keep the calls (`<domain>-api.ts`) and hooks (`use-<thing>.ts`) apart. Add `mappers.ts` only when wire and app shapes really differ.
+- **Persist only an approved offline allowlist.** For each data class, decide whether it may sit on the device, for how long, whether it's excluded from backups, and whether it may still show after the session ends. A persisted query cache (TanStack Query on MMKV, kept for about a day) is a good tool *for the allowlisted queries*, not for everything.
+- **Scope persisted data by environment, account, tenant and schema version.** On logout, account switch or the end of a delegated session:
+  - cancel requests;
+  - remove that context's queries, drafts, files, thumbnails and reminders;
+  - drop late responses.
+- Encrypt sensitive persisted data with platform-managed keys, or don't persist it.
+- **Stale data, honestly:** the backend sends `fetchedAt` and `stale` on data it passes through. The app shows "updated 2 h ago" *and* that the refresh failed. Stale data never stands in for an authorisation denial, and consequential actions revalidate.
+- Small client stores (zustand) hold UI state. Persist one only when it must survive a restart.
 
-## 6. Navigation
+## 6. Offline writes
 
-- **File-based routes** (expo-router) with typed routes. Route files stay thin and render a component from `components/<feature>/`.
-- **One URL scheme** (`<scheme>://feed/post/<id>`) is shared by deep links, push taps and in-app links.
-- A tab bar for the main areas. Profile and activity sit off the headers, not in the tab bar.
+Choose per feature:
+- **Read-only offline:** writes need a connection, and the UI says so.
+- **Offline writes:**
+  - a durable outbox scoped to the account, with client-generated IDs and an idempotency key per operation;
+  - ordering and dependencies, and a conflict policy;
+  - visible pending and failed states, and cancel.
 
-## 7. Demo mode
+  Correctness must not depend on background execution: sync on launch and on reconnect. An outbox entry never replays under a different account.
 
-- Behind one switch (`isDemo()`), every API call returns **fixtures**: "Try the demo" on sign-in, and a dev-only deep link (`<scheme>://dev/demo?as=<persona>`).
-- Use it for store review, screenshots, design audits and simulators without accounts.
-- **Rule:** every new API call ships with its demo answer, or that screen breaks in the demo.
+## 7. Live updates and push
 
-## 8. Environments
+- **Live channel:** choose SSE, WebSockets, an SDK subscription or bounded polling, from freshness and battery needs. SSE from the app's backend is a good default for foreground updates.
+  - Scope it to the installation and session, and renew credentials.
+  - Reconnect with backoff and jitter. Resume from the last event ID, or refetch a snapshot after a gap or on returning to the foreground.
+  - Coalesce invalidations instead of refetching on every frame. Close it in the background.
+- **Push is a best-effort signal, not the source of truth:**
+  - The backend sends it. The app registers its installation through an authenticated, idempotent API, bound to the account and environment.
+  - Update rotated tokens, and detach the installation on logout or account switch. The backend removes tokens the provider reports invalid.
+  - Keep payloads minimal, with nothing sensitive on the lock screen: `data.open = <destination>`, then fetch the details after opening.
+  - Set up push credentials and the build's project ID from the first build, and show registration errors instead of failing silently.
+- **Permission:** ask during a relevant flow ("remind me before it starts"). Show the status and a toggle in settings, with a link to OS settings once a prompt is no longer possible.
+- **Local reminders:** stable IDs, rescheduled when the source changes, on logout, on permission changes and across timezone and DST changes.
 
-- **With no env set, the app points at staging.** Production needs explicit config. A developer build must never hit production by accident.
-- One script per environment (`start:staging`, `ios:staging`) that loads its env file.
-- `http://` backends for local work need cleartext allowed in the Android build. Use `10.0.2.2` instead of `localhost` on the emulator.
+## 8. Links and navigation
 
-## 9. Native builds
+- **One typed destination model.** Deep links, push taps and in-app links all go through one allowlisted parser. It validates parameters and waits for sign-in and account context, including on cold start. Then it opens the screen, where the backend rechecks access.
+- Opening a link never performs an action by itself.
+- **Prefer verified HTTPS links** (Universal Links, App Links) for anything shared publicly, with a web fallback. A custom scheme (`<scheme>://`) is fine for internal routing and redirects. Never accept an arbitrary URL as a navigation command.
+- File-based routes (expo-router) with typed routes keep this tidy: route files stay thin and render a feature component. Base the tab layout on the main tasks and platform conventions.
 
-- Use **dev builds**, not Expo Go, once any native module is in (video SDK, fast storage, chat).
-- **Native folders are generated** (continuous native generation) and git-ignored. Native changes go through **config plugins**, and SDK fixes through `patch-package`. Never hand-edit `ios/` or `android/`.
+## 9. Compatibility and releases
+
+- **Define a supported-version window** (for example, the last N releases or 6 months). The backend keeps responses, error codes and events backward compatible across it. New enum values need a fallback in the app.
+- Show a usable "update required" state for versions outside the window. Don't assume everyone updates.
+- **Version local data** (persisted caches, outbox, settings) and migrate it.
+- **OTA updates** only reach binaries with a matching native runtime version. Roll out in stages, and keep a rollback or kill switch.
+- **Demo mode**, when review, onboarding or demos need it:
+  - a separate synthetic identity and state;
+  - a policy for every boundary: API, streams, uploads, push, analytics, SDKs;
+  - no production writes;
+  - developer entry points (`<scheme>://dev/demo`) compiled out of release builds.
+
+  Every new API call ships with its demo answer.
+
+## 10. Environments
+
+- **Every distributed build names its environment explicitly.** A release build with a missing or mismatched API host, auth issuer, app ID, update channel or push environment fails validation.
+- **Developer scripts choose staging explicitly** (`start:staging`, `ios:staging`), so a dev build never hits production by accident and never reaches it by default.
+- Keep app IDs, credentials, push configuration and update channels separate per environment.
+- Local `http://` is allowed in debug builds only, for the dev hosts that need it. Release builds use HTTPS. On the Android emulator the host is `10.0.2.2`.
+
+## 11. Native workflow and look
+
+- **Follow the project's native workflow.** With Expo continuous native generation, `ios/` and `android/` are generated and git-ignored, and changes go through config plugins. In bare or native projects, edit native code normally.
+- Use a development build once you need native code that Expo Go doesn't include.
+- Prefer upstream fixes. Keep any `patch-package` patch explicit and verified in CI.
 - Keep `*.web.ts` twins for native-only services if there's a web build.
-- Build profiles per environment, and bundle ids and the project id set from the first build.
-
-## 10. Look
-
-- Native and fast, in the brand's colours and type. Tokens are CSS variables (NativeWind), mirrored in a `theme.ts` for native props.
-- Dark mode is derived from the brand's dark colour, not invented separately.
+- **Look:**
+  - one source of semantic tokens (CSS variables via NativeWind, generated into a `theme.ts` for native props);
+  - the brand's colours and type;
+  - light and dark themes, each checked for contrast.
+- **Accessibility and language:**
+  - screen-reader labels and order, dynamic text size, touch targets, reduced motion and safe areas;
+  - translation, RTL, and locale date, time and timezone handling.
+- **Crash and error reporting:** privacy-filtered, tagged with build and runtime IDs, with symbols and source maps uploaded.
 
 ## Write the design as
 
-1. **Summary**, and the **Problem** it solves (what the old app got wrong).
-2. **Who owns what:** the app owns nothing; list each piece of data and its owner.
+1. **Summary**, and the **Problem** it solves.
+2. **Who owns what:** each data class, its owner, and whether it may be stored offline.
 3. **Talks to:** the table from step 1, with auth for each.
-4. **Tabs and routes:** with the deep-link scheme.
-5. **Key decisions:** area → decision (sign-in, data, offline, live, push, demo, stack, look).
-6. **Phases:** for example account service → backend skeleton → app shell → sign-in → first feature → the rest → invite-only beta.
-7. **Open questions**, each with a recommended answer.
+4. **Screens and links:** the destination model and its link formats.
+5. **Key decisions:** area → decision (sign-in, refresh, offline, live, push, compatibility, environments, stack).
+6. **Validation:**
+   - tests for refresh races, safe retries, account and cache isolation, offline restart and sync, old local schemas;
+   - deep links and push from foreground, background and cold start;
+   - denied permissions, accessibility;
+   - a release build on real devices.
+7. **Rollout and operations:** staged rollout, crash and error reporting, release identity, and recovery from a bad binary or OTA update.
+8. **Phases:** an end-to-end journey first, verified, then the rest.
+9. **Open questions**, each with a recommended answer.
 
 ## Red Flags
 
-- The app calling a system of record, or a third-party API with a secret.
-- A token in plain storage.
-- An infinite refresh loop on `401`.
-- Empty screens where a gate or a stale banner belongs.
-- A screen calling the client directly.
-- A new endpoint with no demo fixture.
-- Polling where a live frame exists.
-- Push that depends on a permission asked from one screen.
-- Dev builds that default to production.
-- Edits inside generated `ios/` or `android/`.
+- A privileged secret in the bundle, or a header treated as app identity.
+- Sign-in inside a web view.
+- A refresh token in plain storage.
+- Parallel refreshes racing.
+- A write replayed without an idempotency key.
+- Sign-out on a network error.
+- The whole query cache persisted, or data from the previous account still visible after a switch.
+- Push still bound to the previous account after logout.
+- Sensitive text on the lock screen.
+- A deep link that skips sign-in, or opens any URL it's given.
+- An API change that breaks last month's app.
+- A release build that runs without an explicit environment.
+- An empty env var that means production.

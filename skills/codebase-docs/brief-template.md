@@ -8,14 +8,16 @@ Docs root: `[absolute path]`
 
 ## The repos
 
-| Repo | What | Guide folder |
-| --- | --- | --- |
-| [repo-a] | [one line] | `repos/[repo-a]/` |
-| [repo-b] | [one line] | `repos/[repo-b]/` |
+| Repo | What | Guide folder | Host URL | Branch @ commit | Local changes |
+| --- | --- | --- | --- | --- | --- |
+| [repo-a] | [one line] | `repos/[repo-a]/` | [https://github.com/org/repo-a] | [main @ 1a2b3c4] | [none] |
+| [repo-b] | [one line] | `repos/[repo-b]/` | [https://github.com/org/repo-b] | [main @ 5d6e7f8] | [none] |
 
-Shared pages that will exist (link to them where relevant): `architecture/overview.md`, `architecture/connections.md`, `architecture/auth.md`, `architecture/data.md`, `architecture/environments.md`, `architecture/jobs-and-schedules.md`, `architecture/observability.md`, `architecture/external-services.md`, `how-we-work.md`, `glossary.md`.
+Document the code at that commit. If your checkout is somewhere else, say so in your final reply instead of documenting it.
 
-[Deploy facts every agent must describe the same way, e.g. "`staging` deploys to staging; `main` is meant to deploy to production but that isn't set up yet".]
+Shared pages that will exist (link to them where relevant): `architecture/overview.md`, `architecture/connections.md`, `architecture/auth.md`, `architecture/data.md`, `architecture/environments.md`, `architecture/jobs-and-schedules.md`, `architecture/observability.md`, `architecture/external-services.md`, `architecture/lifecycles.md`, `how-we-work.md`, `glossary.md`, `known-issues.md`. From `repos/<repo>/` they are `../../architecture/<page>.md` and `../../<page>.md`.
+
+[Deploy facts every agent must describe the same way, as observed in config, e.g. "`staging` deploys to the staging host; nothing deploys from `main`". Mark anything planned as planned only if a document says so.]
 
 ## What to write
 
@@ -53,8 +55,8 @@ And `_facts/<repo>-<slice>-pages.md`: one line per page, `path | one-line descri
 
 - **Read the code, not just the docs.** If they disagree, follow the code and say so in Gotchas.
 - **Plain English** for a newcomer: short sentences, explain jargon on first use, no marketing tone.
-- **Links**: relative links between docs pages; code as full `https://github.com/[org]/<repo>/blob/[branch]/<path>` links, only for files that exist. No `[[wikilinks]]`.
+- **Links**: relative links between docs pages; code as permalinks to the commit in the table (`[host URL]/blob/<sha>/<path>`), only for files that exist. No `[[wikilinks]]`.
 - **Accuracy over completeness.** Never guess. If unsure, write "check `<file>`" or list it under Unsure.
-- **Never write** secrets, tokens, keys, passwords, connection strings, env var *values*, internal IPs, or any real person's name, email, phone number or ID. Use "a staff member", "a customer" or "a student" instead.
-- **Read-only on code**: no edits, installs, servers, network or pushes. Write only inside the docs root.
+- **Never write** secrets, tokens, keys, passwords, connection strings, env var *values*, internal IPs, or any real person's name, email, phone number or ID. Use "a staff member" or "a customer" instead.
+- **Read-only on code**: no edits, installs, servers, network or pushes. If a hook or policy blocks something, report it; never work around it. Write only inside the docs root.
 - **Final reply**: the pages you wrote and the 5–10 most important cross-service facts.

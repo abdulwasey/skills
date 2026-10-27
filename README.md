@@ -11,7 +11,7 @@ it, and auditing UI. They work with Claude Code and any other agent that reads
 | [`design-audit`](skills/design-audit/SKILL.md) | Read-only, flow-by-flow UI audit (readability, font, spacing, contrast, touch targets, network) on web, iOS simulator and Android emulator. |
 | [`walkthrough-video`](skills/walkthrough-video/SKILL.md) | Narrated 30–60 s product walkthrough (MP4 + SRT) from screenshots: local TTS, zooms, highlights, cursor, HyperFrames render, frame and sync checks ([demo](skills/walkthrough-video/demo.gif)). |
 | [`marketing-video`](skills/marketing-video/SKILL.md) | Seamless 10–20 s promo loops (MP4, GIF, poster; landscape, square, vertical) rendering the app's real React components with stubbed APIs, plus a launch cut. |
-| [`env-branch-release`](skills/env-branch-release/SKILL.md) | Ship a PR, branch or the default branch to a long-lived environment branch (qa, staging, team1…): confirm the source, carry only the missing commits in the repo's own naming, merge, and verify each service's deploy by behaviour before releasing the next. |
+| [`env-branch-release`](skills/env-branch-release/SKILL.md) | Ship a PR, branch or the default branch to a long-lived environment branch (qa, staging, team1…): confirm the source, carry exactly that change in the repo's own naming and allowed merge method, and verify each service's deploy before releasing the next. |
 
 ## Install
 
